@@ -20,6 +20,7 @@ namespace dae {
 	public:
 		// Dual Rasterizer
 		explicit Mesh(ID3D11Device* pDevice, const std::string& objFilePath, EffectType fxType);
+		explicit Mesh(ID3D11Device* pDevice, std::vector<T_Vertex> vertices, std::vector<uint32_t> indices);
 		~Mesh();
 
 		Mesh(const Mesh& other) = delete;
@@ -55,6 +56,7 @@ namespace dae {
 		ID3D11Buffer* m_pIndexBuffer;
 
 		void InitializeEffect(ID3D11Device* pDevice, EffectType fxType);
+		void InitializeBuffer(ID3D11Device* pDevice);
 
 		// Software Rasterizer
 		PrimitiveTopology m_pPrimitiveTopology{ PrimitiveTopology::TriangleList };
@@ -84,36 +86,17 @@ namespace dae {
 
 		InitializeEffect(pDevice, fxType);
 
-		D3D11_BUFFER_DESC bd{};
-		bd.Usage = D3D11_USAGE_IMMUTABLE;
-		bd.ByteWidth = sizeof(T_Vertex) * static_cast<uint32_t>(m_Vertices.size());
-		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-		bd.CPUAccessFlags = 0;
-		bd.MiscFlags = 0;
+		InitializeBuffer(pDevice);
+	}
 
-		D3D11_SUBRESOURCE_DATA initData{};
-		initData.pSysMem = m_Vertices.data();
+	template<typename T_Vertex>
+	Mesh<T_Vertex>::Mesh(ID3D11Device* pDevice, std::vector<T_Vertex> vertices, std::vector<uint32_t> indices)
+	{
+		m_Vertices = vertices;
+		m_Indices = indices;
 
-		HRESULT result{ pDevice->CreateBuffer(&bd, &initData, &m_pVertexBuffer) };
-		if (FAILED(result))
-		{
-			assert(false);
-		}
-
-		m_NumIndices = static_cast<uint32_t>(m_Indices.size());
-		bd.Usage = D3D11_USAGE_IMMUTABLE;
-		bd.ByteWidth = sizeof(uint32_t) * m_NumIndices;
-		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-		bd.CPUAccessFlags = 0;
-		bd.MiscFlags = 0;
-
-		initData.pSysMem = m_Indices.data();
-
-		result = pDevice->CreateBuffer(&bd, &initData, &m_pIndexBuffer);
-		if (FAILED(result))
-		{
-			return;
-		}
+		InitializeEffect(pDevice, EffectType::PosCol);
+		InitializeBuffer(pDevice);
 	}
 
 	template<typename T_Vertex>
@@ -216,6 +199,41 @@ namespace dae {
 		case EffectType::PartCov:
 			m_pEffect = new Effect_PartCov{ pDevice };
 			break;
+		}
+	}
+
+	template<typename T_Vertex>
+	void Mesh<T_Vertex>::InitializeBuffer(ID3D11Device* pDevice)
+	{
+		D3D11_BUFFER_DESC bd{};
+		bd.Usage = D3D11_USAGE_IMMUTABLE;
+		bd.ByteWidth = sizeof(T_Vertex) * static_cast<uint32_t>(m_Vertices.size());
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		bd.MiscFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA initData{};
+		initData.pSysMem = m_Vertices.data();
+
+		HRESULT result{ pDevice->CreateBuffer(&bd, &initData, &m_pVertexBuffer) };
+		if (FAILED(result))
+		{
+			assert(false);
+		}
+
+		m_NumIndices = static_cast<uint32_t>(m_Indices.size());
+		bd.Usage = D3D11_USAGE_IMMUTABLE;
+		bd.ByteWidth = sizeof(uint32_t) * m_NumIndices;
+		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+		bd.MiscFlags = 0;
+
+		initData.pSysMem = m_Indices.data();
+
+		result = pDevice->CreateBuffer(&bd, &initData, &m_pIndexBuffer);
+		if (FAILED(result))
+		{
+			assert(false);
 		}
 	}
 

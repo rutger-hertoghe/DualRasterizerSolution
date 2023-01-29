@@ -3,13 +3,13 @@
 #include "Mesh.h"
 #include "Structs.h"
 #include "Camera.h"
-#include "ConsoleColorCtrl.h"
 #include "Effect.h"
 #include "Effect_PartCov.h"
 #include "Effect_PosTex.h"
 #include "Effect_PosCol.h"	
 #include "Texture.h"
 #include "Utils.h"
+#include "MeshBuilder.h"
 
 namespace dae
 {
@@ -60,8 +60,6 @@ namespace dae
 		m_pVehicle->GetEffect()->AddTechnique("TheGrandTechniqueNOCULL");
 		m_pVehicle->GetEffect()->AddTechnique("TheGrandTechniqueFRONTCULL");
 
-
-
 		// FIRE EFFECT
 		// 1) Load textures
 		m_pFireDiffuse = new Texture{ "Resources/fireFX_diffuse.png", m_pDevice };
@@ -75,7 +73,8 @@ namespace dae
 		// 4) Link textures to effect
 		m_pFireEffect->GetEffect()->AddMap("gDiffuseMap", m_pFireDiffuse);
 
-
+		m_pTestMesh = MeshBuilder::CreateRectangularCuboid(m_pDevice, 10.f, 10.f, 10.f);
+		m_pTestMesh->SetWorldMatrix(Matrix::CreateTranslation(0, 0, 50.f));
 
 		// CAMERA
 		m_pCamera = new Camera{};
@@ -97,6 +96,7 @@ namespace dae
 		SAFE_DELETE(m_pVehicleSpecular)
 		SAFE_DELETE(m_pVehicleNormal)
 		SAFE_DELETE(m_pFireDiffuse)
+		SAFE_DELETE(m_pTestMesh)
 	}
 
 	void Renderer::Update(const Timer* pTimer)
@@ -110,111 +110,16 @@ namespace dae
 		}
 
 		m_pVehicle->VerticesToProjectionSpace(m_pCamera->viewMatrix, m_pCamera->projectionMatrix, m_pCamera->origin);
+		m_pTestMesh->VerticesToProjectionSpace(m_pCamera->viewMatrix, m_pCamera->projectionMatrix, m_pCamera->origin);
 
 		m_pVehicle->UpdateEffectMatrices(m_pCamera);
-		m_pFireEffect->UpdateEffectMatrices(m_pCamera);
+		m_pTestMesh->UpdateEffectMatrices(m_pCamera);
+		//m_pFireEffect->UpdateEffectMatrices(m_pCamera);
 	}
 
 	void Renderer::Render() const
 	{
-		if(m_UseSoftwareRasterizer)	SoftwareRender();
-		else						HardwareRender();
-	}
-
-	void Renderer::CycleShadingModes()
-	{
-		// Cycling
-		m_ShadingMode = static_cast<ShadingMode>(static_cast<int>(m_ShadingMode) + 1);
-		if (m_ShadingMode == ShadingMode::ENUM_END)
-		{
-			m_ShadingMode = static_cast<ShadingMode>(0);
-		}
-
-		// Dynamic_cast seems justifiable due to it being only used on a keypress, and not having to implement SetShadingMode in the Effect base class
-		dynamic_cast<Effect_PosTex*>(m_pVehicle->GetEffect())->SetShadingMode(static_cast<int>(m_ShadingMode));
-
-		// Console logging:
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_YELLOW);
-		std::cout << "**(SHARED) Shading Mode = ";
-
-		switch (m_ShadingMode)
-		{
-		case ShadingMode::observedArea:
-			std::cout << "OBSERVED_AREA\n";
-			break;
-		case ShadingMode::diffuse:
-			std::cout << "DIFFUSE\n";
-			break;
-		case ShadingMode::specular:
-			std::cout << "SPECULAR\n";
-			break;
-		case ShadingMode::combined:
-			std::cout << "COMBINED\n";
-			break;
-		}
-	}
-
-	void Renderer::ToggleUseNormalMaps()
-	{
-		m_IsUsingNormalMap = !m_IsUsingNormalMap;
-		dynamic_cast<Effect_PosTex*>(m_pVehicle->GetEffect())->SetUseNormalMap(m_IsUsingNormalMap);
-
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_YELLOW);
-		std::cout << "**(SHARED) NormalMap " << (m_IsUsingNormalMap ? "ON" : "OFF") << std::endl;
-	}
-
-	void Renderer::ToggleRotateMesh()
-	{
-		m_IsMeshRotating = !m_IsMeshRotating;
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_YELLOW);
-
-		std::cout << "**(SHARED) Vehicle Rotation " << (m_IsMeshRotating ? "ON" : "OFF") << std::endl;
-	}
-
-	void Renderer::ToggleRasterizer()
-	{
-		m_UseSoftwareRasterizer = !m_UseSoftwareRasterizer;
-
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_YELLOW);
-		std::cout << "**(SHARED)Rasterizer Mode = " << (m_UseSoftwareRasterizer ? "SOFTWARE" : "HARDWARE") << std::endl;
-	}
-
-	void Renderer::ToggleUniformColor()
-	{
-		m_UseUniformColor = !m_UseUniformColor;
-
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_YELLOW);
-		std::cout << "**(SHARED) Uniform ClearColor " << (m_UseUniformColor ? "ON" : "OFF") << std::endl;
-	}
-
-	void Renderer::CycleCullingMode()
-	{
-		// Software cycling
-		// Cycle
-		m_CullingMode = static_cast<CullingMode>(static_cast<int>(m_CullingMode) + 1);
-
-		// Correct if set to ENUM_END in cycle
-		if (m_CullingMode == CullingMode::ENUM_END) m_CullingMode = static_cast<CullingMode>(0);
-
-		// Set Hardware culling mode
-		dynamic_cast<Effect_PosTex*>(m_pVehicle->GetEffect())->SetCullingMode(m_CullingMode);
-
-		// Console logging
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_YELLOW);
-		std::cout << "**(SHARED) CullMode = ";
-		switch(m_CullingMode)
-		{
-		case CullingMode::back:
-			std::cout << "BACK\n";
-			break;
-		case CullingMode::front:
-			std::cout << "FRONT\n";
-			break;
-		case CullingMode::ENUM_END:	// Should not occur, used for warning supression. If this state is selected, SoftwareRender will log it in console.
-		case CullingMode::none:
-			std::cout << "NONE\n";
-			break;
-		}
+		SoftwareRender();
 	}
 #pragma endregion
 
@@ -372,47 +277,12 @@ namespace dae
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		// 2. Set pipeline & invoke drawcalls (= render)
-		m_pVehicle->HardwareRender(m_pDeviceContext, m_pDevice);
-		if(m_UseFireFX) m_pFireEffect->HardwareRender(m_pDeviceContext, m_pDevice);
+		//m_pVehicle->HardwareRender(m_pDeviceContext, m_pDevice);
+		//if(m_UseFireFX) m_pFireEffect->HardwareRender(m_pDeviceContext, m_pDevice);
+		m_pTestMesh->HardwareRender(m_pDeviceContext, m_pDevice);
 
 		// 3. Present backbuffer (swap)
 		m_pSwapChain->Present(0, 0);
-	}
-
-	void Renderer::CycleFilteringTechniques()
-	{
-		m_FilteringMode = static_cast<FilteringMode>(static_cast<int>(m_FilteringMode) + 1);
-		if(m_FilteringMode == FilteringMode::ENUM_END)
-		{
-			m_FilteringMode = static_cast<FilteringMode>(0);
-		}
-
-		m_pVehicle->GetEffect()->SetFilterMode(static_cast<int>(m_FilteringMode));
-		m_pFireEffect->GetEffect()->SetFilterMode(static_cast<int>(m_FilteringMode));
-
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_GREEN);
-
-		std::cout << "**(HARDWARE) Sampler Filter = ";
-		switch (m_FilteringMode)
-		{
-		case FilteringMode::point:
-			std::cout << "POINT" << std::endl;
-			break;
-		case FilteringMode::linear:
-			std::cout << "LINEAR" << std::endl;
-			break;
-		case FilteringMode::ENUM_END: // Impossible; in here for warning suppression
-		case FilteringMode::anisotropic:
-			std::cout << "ANISOTROPIC" << std::endl;
-			break;
-		}
-	}
-
-	void Renderer::ToggleFireFX()
-	{
-		m_UseFireFX = !m_UseFireFX;
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_GREEN);
-		std::cout << "**(HARDWARE) FireFX " << (m_UseFireFX ? "ON" : "OFF") << std::endl;
 	}
 #pragma endregion
 
@@ -442,9 +312,9 @@ namespace dae
 		//Lock BackBuffer
 		SDL_LockSurface(m_pBackBuffer);
 
-		auto& vertsOut{ m_pVehicle->GetVertexOutVector() };
-		const int lastTriangleStartIndex{ static_cast<int>(m_pVehicle->GetNumIndices() - 2) };
-		auto vertIndices{ m_pVehicle->GetIndices() };
+		auto& vertsOut{ m_pTestMesh->GetVertexOutVector() };
+		const int lastTriangleStartIndex{ static_cast<int>(m_pTestMesh->GetNumIndices() - 2) };
+		auto vertIndices{ m_pTestMesh->GetIndices() };
 
 		// For every triangle
 		for (int vertexIndex{}; vertexIndex < lastTriangleStartIndex; vertexIndex += 3)
@@ -684,20 +554,6 @@ namespace dae
 
 		std::cout << "Oh no! Rendering pixel with correct colors failed!\n";
 		return ColorRGB{}; // If this is returned (= completely black), something went wrong. In here for warning suppression
-	}
-
-	void Renderer::ToggleShowDepthBuffer()
-	{
-		m_ShowOnlyDepthBuffer = !m_ShowOnlyDepthBuffer;
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_PURPLE);
-		std::cout << "**(SOFTWARE) DepthBuffer Visualization " << (m_ShowOnlyDepthBuffer ? "ON" : "OFF") << std::endl;
-	}
-
-	void Renderer::ToggleShowBoundingBoxes()
-	{
-		m_ShowOnlyBoundingBoxes = !m_ShowOnlyBoundingBoxes;
-		ConsoleColorCtrl::GetInstance()->SetConsoleColor(CNSL_PURPLE);
-		std::cout << "**(SOFTWARE) BoundingBox Visualization " << (m_ShowOnlyBoundingBoxes ? "ON" : "OFF") << std::endl;
 	}
 #pragma endregion
 }

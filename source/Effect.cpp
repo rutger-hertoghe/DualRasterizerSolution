@@ -144,7 +144,7 @@ namespace dae
 
 		if (FAILED(result))
 		{
-			assert(false);
+			//assert(false);
 		}
 	}
 

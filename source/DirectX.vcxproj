@@ -15,7 +15,7 @@
     <ProjectGuid>{62BA78F9-CC88-465F-AEDF-B7557B1D0F13}</ProjectGuid>
     <RootNamespace>RayTracer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>DualRasterizer</ProjectName>
+    <ProjectName>PlantEvo</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -80,7 +80,6 @@
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ColorRGB.h" />
-    <ClInclude Include="ConsoleColorCtrl.h" />
     <ClInclude Include="Effect.h" />
     <ClInclude Include="Effect_PartCov.h" />
     <ClInclude Include="Effect_PosCol.h" />
@@ -88,6 +87,7 @@
     <ClInclude Include="MathHelpers.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="MeshBuilder.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Structs.h" />
@@ -100,7 +100,6 @@
     <ClInclude Include="Vector4.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ConsoleColorCtrl.cpp" />
     <ClCompile Include="Effect.cpp" />
     <ClCompile Include="Effect_PartCov.cpp" />
     <ClCompile Include="Effect_PosCol.cpp" />

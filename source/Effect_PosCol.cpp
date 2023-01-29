@@ -4,7 +4,7 @@
 namespace dae
 {
 	Effect_PosCol::Effect_PosCol(ID3D11Device* pDevice)
-		: Effect(pDevice, L"Resources/PosCol3D.fx", "PLACEHOLDER")
+		: Effect(pDevice, L"Resources/PosCol3D.fx", "DefaultTechnique")
 	{
 		// Create Vertex Layout
 		static constexpr uint32_t numElements{ 2 };

@@ -67,9 +67,7 @@
     <ClInclude Include="Texture.h">
       <Filter>OwnCode</Filter>
     </ClInclude>
-    <ClInclude Include="ConsoleColorCtrl.h">
-      <Filter>OwnCode</Filter>
-    </ClInclude>
+    <ClInclude Include="MeshBuilder.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
@@ -103,9 +101,6 @@
       <Filter>OwnCode\Effects</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
-      <Filter>OwnCode</Filter>
-    </ClCompile>
-    <ClCompile Include="ConsoleColorCtrl.cpp">
       <Filter>OwnCode</Filter>
     </ClCompile>
   </ItemGroup>

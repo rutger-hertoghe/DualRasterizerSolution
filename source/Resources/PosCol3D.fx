@@ -2,6 +2,8 @@
 // Globals
 //-----------------------------
 float4x4 gWorldViewProj : WorldViewProjection;
+float4x4 gWorldMatrix : WORLD;
+float4x4 gViewInvMatrix : VIEWINVERSE;
 
 RasterizerState gRasterizerState
 {

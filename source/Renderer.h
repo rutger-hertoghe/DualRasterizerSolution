@@ -56,22 +56,6 @@ namespace dae
 		template<typename T_Vertex>
 		Mesh<T_Vertex>* GetMesh() const;
 
-		void CycleShadingModes();
-		void ToggleUseNormalMaps();
-		void ToggleRotateMesh();			 
-		void ToggleRasterizer();
-		void ToggleUniformColor();
-		void CycleCullingMode();
-
-		// HARDWARE RASTERIZER
-		void ToggleFireFX();
-		void CycleFilteringTechniques();
-
-		// SOFTWARE RASTERIZER
-		// bool SaveBufferToImage() const;
-		void ToggleShowDepthBuffer();
-		void ToggleShowBoundingBoxes();
-
 	private:
 		// DUAL RASTERIZER
 		const ColorRGB m_UniformClearColor{ .1f, .1f, .1f };
@@ -97,6 +81,7 @@ namespace dae
 		Mesh<Vertex_PosTex>* m_pMesh;
 		Mesh<Vertex_PosTex>* m_pVehicle;
 		Mesh<Vertex_PosTex>* m_pFireEffect;
+		Mesh<Vertex_PosCol>* m_pTestMesh;
 		Camera* m_pCamera;
 
 		// HARDWARE RASTERIZER
