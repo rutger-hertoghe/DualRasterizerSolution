@@ -30,5 +30,7 @@ namespace dae
 	{
 		Vector3 position{};
 		Vector3 color{};
+		Vector3 normal{};
+		Vector3 tangent{};
 	};
 }

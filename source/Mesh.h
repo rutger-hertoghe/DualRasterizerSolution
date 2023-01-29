@@ -38,7 +38,7 @@ namespace dae {
 		Effect* GetEffect();
 
 		// Software Rasterizer
-		void VerticesToProjectionSpace(const Matrix& viewMatrix, const Matrix& projectionMatrix, const Vector3& cameraPos);
+		//void VerticesToProjectionSpace(const Matrix& viewMatrix, const Matrix& projectionMatrix, const Vector3& cameraPos);
 		std::vector<Vertex_Out>& GetVertexOutVector();
 		uint32_t GetNumIndices();
 		std::vector<uint32_t> GetIndices();
@@ -244,45 +244,45 @@ namespace dae {
 	// SOFTWARE RASTERIZER
 	//--------------------------------------
 #pragma region SOFTWARE_RASTERIZER
-	template<typename T_Vertex>
-	void Mesh<T_Vertex>::VerticesToProjectionSpace(const Matrix& viewMatrix, const Matrix& projectionMatrix, const Vector3& cameraPos)
-	{
-		const Matrix wvpMatrix{ m_WorldMatrix * viewMatrix * projectionMatrix };
-		m_Vertices_out.clear();
-
-		for(const auto& vertex : m_Vertices)
-		{
-			Vertex_Out outVertex{};
-			outVertex.position.x = vertex.position.x;
-			outVertex.position.y = vertex.position.y;
-			outVertex.position.z = vertex.position.z;
-			outVertex.position.w = 1.f;
-
-			outVertex.normal = vertex.normal;
-			outVertex.tangent = vertex.tangent;
-			outVertex.uv = vertex.uv;
-
-			// VIEW DIRECTION
-			outVertex.viewDirection = wvpMatrix.TransformPoint(vertex.position) - cameraPos;
-
-			// VERTICES
-			// Projection Space
-			outVertex.position = wvpMatrix.TransformPoint(outVertex.position);
-
-			// Perspective Divide
-			outVertex.position.x /= outVertex.position.w;
-			outVertex.position.y /= outVertex.position.w;
-			outVertex.position.z /= outVertex.position.w;
-
-			// NORMALS
-			outVertex.normal = m_WorldMatrix.TransformVector(outVertex.normal);
-			outVertex.normal.Normalize();
-			outVertex.tangent = m_WorldMatrix.TransformVector(outVertex.tangent);
-			outVertex.tangent.Normalize();
-
-			m_Vertices_out.emplace_back(outVertex);
-		}
-	}
+	//template<typename T_Vertex>
+	//void Mesh<T_Vertex>::VerticesToProjectionSpace(const Matrix& viewMatrix, const Matrix& projectionMatrix, const Vector3& cameraPos)
+	//{
+	//	const Matrix wvpMatrix{ m_WorldMatrix * viewMatrix * projectionMatrix };
+	//	m_Vertices_out.clear();
+	//
+	//	for(const auto& vertex : m_Vertices)
+	//	{
+	//		Vertex_Out outVertex{};
+	//		outVertex.position.x = vertex.position.x;
+	//		outVertex.position.y = vertex.position.y;
+	//		outVertex.position.z = vertex.position.z;
+	//		outVertex.position.w = 1.f;
+	//
+	//		outVertex.normal = vertex.normal;
+	//		outVertex.tangent = vertex.tangent;
+	//		outVertex.uv = vertex.uv;
+	//
+	//		// VIEW DIRECTION
+	//		outVertex.viewDirection = wvpMatrix.TransformPoint(vertex.position) - cameraPos;
+	//
+	//		// VERTICES
+	//		// Projection Space
+	//		outVertex.position = wvpMatrix.TransformPoint(outVertex.position);
+	//
+	//		// Perspective Divide
+	//		outVertex.position.x /= outVertex.position.w;
+	//		outVertex.position.y /= outVertex.position.w;
+	//		outVertex.position.z /= outVertex.position.w;
+	//
+	//		// NORMALS
+	//		outVertex.normal = m_WorldMatrix.TransformVector(outVertex.normal);
+	//		outVertex.normal.Normalize();
+	//		outVertex.tangent = m_WorldMatrix.TransformVector(outVertex.tangent);
+	//		outVertex.tangent.Normalize();
+	//
+	//		m_Vertices_out.emplace_back(outVertex);
+	//	}
+	//}
 
 	template<typename T_Vertex>
 	std::vector<Vertex_Out>& Mesh<T_Vertex>::GetVertexOutVector()
